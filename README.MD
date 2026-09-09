@@ -101,29 +101,18 @@ files and the local Chroma database.
 Start FastAPI in one terminal:
 
 ```powershell
-uvicorn src.api.main:app --reload
+python -m uvicorn src.api.main:app --reload --port 8000
 ```
 
 Start Streamlit in a second terminal:
 
 ```powershell
-streamlit run src/frontend/streamlit_app.py
+streamlit run src/frontend/streamlit_app.py --server.port 8502
 ```
 
 Open the URL printed by Streamlit, usually
-`http://localhost:8501`. Upload an image, select **Process Image**, and then
+`http://localhost:8502`. Upload an image, select **Process Image**, and then
 ask questions in the assistant panel.
-
-### Legacy Gradio interface
-
-The Gradio frontend is still available for alternative workflows:
-
-```powershell
-python -c "from src.frontend.gradio_app import build_app; build_app().launch()"
-```
-
-The Streamlit interface is the recommended frontend because it processes an
-image once and reuses the extracted OCR text for subsequent questions.
 
 ## API reference
 
