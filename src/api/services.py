@@ -9,6 +9,7 @@ from threading import Lock
 from PIL import Image, UnidentifiedImageError
 
 from src.cv.line_detector import LineDetector
+from src.cv.preprocessing import preprocess_document
 from src.ocr.muharaf_ocr import MuharafOCR
 from src.rag import chain
 from src.rag.embeddings import ArabicEmbeddingModel
@@ -61,10 +62,15 @@ class RAGService:
             )
             self._ocr = MuharafOCR()
 
-    def answer_text(self, question: str) -> dict:
+    def answer_text(self, question: str, ocr_text: str | None = None) -> dict:
         self._load_rag()
+        normalized_ocr_text = (ocr_text or "").strip()
         return chain.answer_question(
             question=question,
+            retrieval_query=f"{question}\n{normalized_ocr_text}".strip()
+            if normalized_ocr_text
+            else None,
+            extra_context=normalized_ocr_text or None,
             retriever=self._retriever,
             strategy="hybrid",
             lexical_index=self._lexical_index,
@@ -79,7 +85,7 @@ class RAGService:
             with Image.open(BytesIO(payload)) as image:
                 image.verify()
             with Image.open(BytesIO(payload)) as image:
-                page_image = image.convert("RGB")
+                page_image = preprocess_document(image)
         except (UnidentifiedImageError, OSError) as exc:
             raise ValueError("The uploaded file is not a valid image.") from exc
 

@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 import logging
+import os
+import tempfile
+from pathlib import Path
 
-from fastapi import APIRouter, Depends, FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from openai import APIError
 from pydantic import BaseModel, Field
+from fastapi.responses import FileResponse
 
+from src.api.documents import write_docx_file, write_text_file
 from src.api.services import RAGService, service
 
 logger = logging.getLogger(__name__)
@@ -14,6 +19,11 @@ logger = logging.getLogger(__name__)
 
 class QueryRequest(BaseModel):
     question: str = Field(..., min_length=1)
+    ocr_text: str | None = None
+
+
+class DocumentRequest(BaseModel):
+    text: str = Field(..., min_length=1)
 
 
 class Source(BaseModel):
@@ -94,13 +104,51 @@ def query(request: QueryRequest, rag: RAGService = Depends(get_service)):
     if not question:
         raise HTTPException(status_code=422, detail="question must not be empty")
     try:
-        result = rag.answer_text(question)
+        result = rag.answer_text(question, request.ocr_text)
     except (ValueError, FileNotFoundError, RuntimeError, ImportError, OSError, APIError) as exc:
         _handle_service_error(exc)
     return QueryResponse(
         question=question,
         answer=result["answer"],
         sources=result.get("sources", []),
+    )
+
+
+def _document_response(text: str, extension: str, writer, background_tasks: BackgroundTasks):
+    temp_file = tempfile.NamedTemporaryFile(
+        prefix="arabic_document_", suffix=extension, delete=False
+    )
+    temp_path = Path(temp_file.name)
+    temp_file.close()
+    writer(text, temp_path)
+    background_tasks.add_task(os.unlink, temp_path)
+    return FileResponse(
+        temp_path,
+        media_type=(
+            "text/plain; charset=utf-8"
+            if extension == ".txt"
+            else "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        ),
+        filename=f"arabic_ocr{extension}",
+        background=background_tasks,
+    )
+
+
+@router.post("/documents/txt")
+def document_txt(
+    request: DocumentRequest, background_tasks: BackgroundTasks
+):
+    return _document_response(
+        request.text, ".txt", write_text_file, background_tasks
+    )
+
+
+@router.post("/documents/docx")
+def document_docx(
+    request: DocumentRequest, background_tasks: BackgroundTasks
+):
+    return _document_response(
+        request.text, ".docx", write_docx_file, background_tasks
     )
 
 

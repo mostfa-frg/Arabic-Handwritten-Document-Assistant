@@ -2,17 +2,19 @@
 ultralytics>=8.0.0          # only needed if you still want YOLO fallback
 Pillow>=10.0.0
 numpy>=1.24.0
+opencv-python-headless>=4.8.0
 
 # Preferred for Muharaf
 kraken>=5.0.0               # includes blla segmentation
 
 # Strong modern alternative
 surya-ocr>=0.6.0
-rapidfuzz 
+rapidfuzz>=3.0.0
 openai>=1.0.0
 python-dotenv>=1.0.0
 fastapi>=0.100.0
 uvicorn>=0.23.0
 python-multipart>=0.0.6
 python-docx>=1.0.0
-gradio>=4.0.0
+streamlit>=1.36.0
+requests>=2.31.0
