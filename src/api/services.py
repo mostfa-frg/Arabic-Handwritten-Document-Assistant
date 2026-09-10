@@ -85,7 +85,8 @@ class RAGService:
             with Image.open(BytesIO(payload)) as image:
                 image.verify()
             with Image.open(BytesIO(payload)) as image:
-                page_image = preprocess_document(image)
+                original_image = image.convert("RGB")
+                page_image = preprocess_document(original_image)
         except (UnidentifiedImageError, OSError) as exc:
             raise ValueError("The uploaded file is not a valid image.") from exc
 
@@ -102,7 +103,16 @@ class RAGService:
             raise
 
         try:
-            return self._ocr.recognize_page(lines)
+            text = self._ocr.recognize_page(lines)
+            # Preprocessing can occasionally remove faint strokes or confuse a
+            # page with an unusual background. Keep a conservative fallback to
+            # the original RGB image rather than returning an empty result.
+            if not text.strip() or len(text.strip()) < 3:
+                original_lines = self._detector.detect(original_image, return_crops=True)
+                original_text = self._ocr.recognize_page(original_lines)
+                if len(original_text.strip()) > len(text.strip()):
+                    return original_text
+            return text
         except Exception:
             logger.exception(
                 "Muharaf OCR failed after Kraken detected %d lines", len(lines)

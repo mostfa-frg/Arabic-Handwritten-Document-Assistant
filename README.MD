@@ -15,7 +15,8 @@ use.
 - Ask questions about extracted text or indexed documents.
 - Combine semantic vector search and Arabic lexical search for retrieval.
 - Display source, page, and chunk citations when available.
-- Download OCR output as UTF-8 `TXT` or right-to-left `DOCX`.
+- Review and correct OCR text in the interface before exporting it.
+- Download reviewed OCR output as UTF-8 `TXT` or right-to-left `DOCX`.
 - Expose the same functionality through a documented FastAPI API.
 - Retain a legacy Gradio interface for alternative workflows.
 
@@ -26,14 +27,31 @@ Image
   -> document preprocessing
   -> Kraken line segmentation
   -> Muharaf Arabic OCR
-  -> extracted Arabic text
+  -> editable human review
+  -> extracted Arabic text / DOCX
   -> Chroma + Arabic lexical retrieval
   -> Groq LLM answer with sources
 ```
 
 The Streamlit frontend sends images and questions to FastAPI. OCR and retrieval
-services are initialized lazily on the first request, so application startup
-does not immediately load every model.
+services are initialized lazily on the first request, so application startup does
+not immediately load every model.
+
+## Recommended workflow for difficult handwriting
+
+The system is intentionally **human-in-the-loop**. After OCR finishes, the
+extracted Arabic text remains editable in the left panel. Correct uncertain words
+there, select **Generate downloads from corrected text**, and then download the
+reviewed TXT or DOCX file. Questions asked in the assistant use the reviewed text,
+so a small amount of correction can also improve the quality of the answers.
+
+This design is important for historical Arabic documents: OCR models learn a
+distribution of scripts, image quality, and vocabulary, and cannot reliably
+recover a word that is outside that distribution merely because an image is clear.
+The application therefore separates automated transcription from the final
+user-approved document instead of silently presenting uncertain predictions as
+ground truth. The preprocessing pipeline also keeps a fallback path through the
+original image when conservative enhancement produces no useful text.
 
 ## Requirements
 
@@ -202,15 +220,18 @@ being loaded into memory. Later requests reuse the loaded service.
 Confirm that Uvicorn is running and that `API_BASE_URL` matches its address.
 
 **OCR output is inaccurate**  
-Use a clear, well-lit image with minimal skew and sufficient resolution.
-Handwriting style, page quality, and segmentation quality can materially affect
-recognition accuracy.
+Use a clear, well-lit image with minimal skew and sufficient resolution. Handwriting
+style, page quality, segmentation quality, and vocabulary coverage can materially
+affect recognition accuracy. For historical documents, review the editable result
+before exporting; the reviewed text is the intended final deliverable.
 
 ## Limitations
 
 - The application is intended for local or trusted environments; authentication
   and rate limiting are not included.
-- OCR quality depends on handwriting style, image quality, and model coverage.
+- OCR quality depends on handwriting style, image quality, segmentation quality,
+  and model coverage. It is not a substitute for human verification on historical
+  or unusually styled documents.
 - Question answering requires a configured Groq-compatible API.
 - The default API configuration allows browser requests only from the local
   Streamlit origins.

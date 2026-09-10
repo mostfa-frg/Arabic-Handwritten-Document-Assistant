@@ -15,9 +15,27 @@ API_BASE_URL = os.getenv("API_BASE_URL", DEFAULT_API_URL).rstrip("/")
 
 def _reset_document_state() -> None:
     st.session_state["ocr_text"] = ""
+    st.session_state["edited_text"] = ""
     st.session_state["chat_history"] = []
     st.session_state["txt_bytes"] = None
     st.session_state["docx_bytes"] = None
+
+
+def _generate_downloads(text: str) -> None:
+    """Create downloads from the text the user reviewed, not only raw OCR."""
+    for endpoint, key in (("txt", "txt_bytes"), ("docx", "docx_bytes")):
+        try:
+            response = requests.post(
+                f"{API_BASE_URL}/documents/{endpoint}",
+                json={"text": text},
+                timeout=60,
+            )
+            if response.ok:
+                st.session_state[key] = response.content
+            else:
+                st.warning(f"{endpoint.upper()} download is unavailable: {_api_error(response)}")
+        except requests.RequestException as exc:
+            st.warning(f"Could not create {endpoint.upper()} download: {exc}")
 
 
 def _api_error(response: requests.Response) -> str:
@@ -46,27 +64,21 @@ def _process_image(uploaded_file) -> None:
             return
         ocr_text = response.json().get("ocr_text", "").strip()
         st.session_state["ocr_text"] = ocr_text
+        st.session_state["edited_text"] = ocr_text
         if not ocr_text:
             st.warning("OCR completed, but no text was extracted.")
             return
-
-        for endpoint, key in (("txt", "txt_bytes"), ("docx", "docx_bytes")):
-            document_response = requests.post(
-                f"{API_BASE_URL}/documents/{endpoint}",
-                json={"text": ocr_text},
-                timeout=60,
-            )
-            if document_response.ok:
-                st.session_state[key] = document_response.content
-            else:
-                st.warning(f"{endpoint.upper()} download is unavailable: {_api_error(document_response)}")
+        _generate_downloads(ocr_text)
         st.success("Image processed successfully.")
     except requests.RequestException as exc:
         st.error(f"Could not connect to FastAPI at {API_BASE_URL}: {exc}")
 
 
 def _ask_question(question: str) -> None:
-    ocr_text = st.session_state.get("ocr_text", "").strip()
+    ocr_text = (
+        st.session_state.get("edited_text")
+        or st.session_state.get("ocr_text", "")
+    ).strip()
     if not ocr_text:
         st.warning("Process an image with readable OCR text before asking a question.")
         return
@@ -94,6 +106,7 @@ def _ask_question(question: str) -> None:
 def _initialize_state() -> None:
     defaults = {
         "ocr_text": "",
+        "edited_text": "",
         "chat_history": [],
         "image_bytes": None,
         "image_name": "",
@@ -194,10 +207,26 @@ def build_app() -> None:
                 with st.status("Processing OCR...", expanded=False):
                     _process_image(uploaded_file)
 
-        ocr_text = st.session_state["ocr_text"]
+        ocr_text = (
+            st.session_state.get("edited_text")
+            or st.session_state["ocr_text"]
+        ).strip()
         if ocr_text:
             st.subheader("Extracted OCR text")
-            st.text_area("OCR result", value=ocr_text, height=300, disabled=True, label_visibility="collapsed")
+            st.caption("راجع النص وعدّل الكلمات غير الصحيحة قبل التصدير. يمكنك تنزيل النسخة المصححة.")
+            edited_text = st.text_area(
+                "OCR result (editable)",
+                height=300,
+                key="edited_text",
+                label_visibility="collapsed",
+            )
+            if st.button("Generate downloads from corrected text", use_container_width=True):
+                corrected = edited_text.strip()
+                if corrected:
+                    _generate_downloads(corrected)
+                    st.success("Downloads updated using the corrected text.")
+                else:
+                    st.warning("Please keep at least some text before exporting.")
             download_col1, download_col2 = st.columns(2)
             with download_col1:
                 if st.session_state["txt_bytes"]:
