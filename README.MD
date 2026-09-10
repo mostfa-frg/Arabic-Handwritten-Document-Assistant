@@ -14,11 +14,13 @@ use.
 - Recognize Arabic handwriting with the Muharaf OCR model.
 - Ask questions about extracted text or indexed documents.
 - Combine semantic vector search and Arabic lexical search for retrieval.
+- Use RapidFuzz for fuzzy lexical recovery and optional post-OCR correction
+  suggestions.
 - Display source, page, and chunk citations when available.
 - Review and correct OCR text in the interface before exporting it.
 - Download reviewed OCR output as UTF-8 `TXT` or right-to-left `DOCX`.
 - Expose the same functionality through a documented FastAPI API.
-- Retain a legacy Gradio interface for alternative workflows.
+- Use Streamlit as the primary and only web frontend.
 
 ## How it works
 
@@ -35,7 +37,8 @@ Image
 
 The Streamlit frontend sends images and questions to FastAPI. OCR and retrieval
 services are initialized lazily on the first request, so application startup does
-not immediately load every model.
+not immediately load every model. The raw OCR text remains editable and is not
+silently corrected before human approval.
 
 ## Recommended workflow for difficult handwriting
 
@@ -52,6 +55,11 @@ The application therefore separates automated transcription from the final
 user-approved document instead of silently presenting uncertain predictions as
 ground truth. The preprocessing pipeline also keeps a fallback path through the
 original image when conservative enhancement produces no useful text.
+
+The optional spell-correction helpers in `src/rag/spellcheck.py` are pure,
+non-destructive utilities. They are not applied automatically to OCR output;
+the raw text shown for review remains unchanged unless a user explicitly adopts
+a suggested correction.
 
 ## Requirements
 
@@ -80,14 +88,6 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-The Muharaf OCR wrapper also uses `huggingface_hub` and the RAG pipeline uses
-`sentence-transformers` and `chromadb`. If they are not already available in
-your environment, install them with:
-
-```powershell
-pip install huggingface-hub sentence-transformers chromadb
-```
-
 Download the recommended Kraken segmentation model once:
 
 ```powershell
@@ -103,13 +103,14 @@ Create a `.env` file in the project root:
 
 ```dotenv
 GROQ_API_KEY=your_groq_api_key
-GROQ_MODEL=qwen/qwen3.8-27b
+GROQ_MODEL=qwen/qwen3-32b
 API_BASE_URL=http://127.0.0.1:8000
 ```
 
 `GROQ_API_KEY` is required for `/query` and `/query-image`. `GROQ_MODEL` is
-optional and defaults to `qwen/qwen3.8-27b`. `API_BASE_URL` is used by the
-Streamlit frontend and defaults to `http://127.0.0.1:8000`.
+optional and defaults to `qwen/qwen3-32b`. `API_BASE_URL` is used by the
+Streamlit frontend and defaults to `http://127.0.0.1:8000`. Answers allow up to
+2048 generated tokens by default.
 
 Never commit `.env` or API keys. The repository already ignores environment
 files and the local Chroma database.
@@ -129,8 +130,9 @@ streamlit run src/frontend/streamlit_app.py --server.port 8502
 ```
 
 Open the URL printed by Streamlit, usually
-`http://localhost:8502`. Upload an image, select **Process Image**, and then
-ask questions in the assistant panel.
+`http://localhost:8502`. Upload an image, select **Process Image**, review or
+edit the raw OCR result, and then ask questions in the assistant panel. The
+deleted Gradio frontend is no longer supported or required.
 
 ## API reference
 
@@ -193,7 +195,7 @@ asking questions about a document corpus.
 src/
 ├── api/          FastAPI routes, request models, and document exporters
 ├── cv/           Image preprocessing and text-line detection
-├── frontend/     Streamlit and legacy Gradio applications
+├── frontend/     Streamlit application
 ├── ocr/          Muharaf OCR model integration
 └── rag/          Chunking, embeddings, Chroma, retrieval, and answer generation
 data/

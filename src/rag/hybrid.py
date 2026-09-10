@@ -4,6 +4,8 @@ import math
 import re
 from collections import Counter
 
+from rapidfuzz import process
+
 
 TOKEN_PATTERN = re.compile(r"[A-Za-z0-9\u0600-\u06ff]+")
 
@@ -14,6 +16,8 @@ def _tokens(text: str) -> list[str]:
 
 class ArabicLexicalIndex:
     """Small read-only BM25 index over the existing Chroma documents."""
+
+    _INDEX_CACHE: dict[int, "ArabicLexicalIndex"] = {}
 
     def __init__(self, documents: list[str], metadatas: list[dict]):
         self.documents = documents
@@ -31,21 +35,51 @@ class ArabicLexicalIndex:
 
     @classmethod
     def from_vector_store(cls, vector_store) -> "ArabicLexicalIndex":
+        """Build or retrieve the lexical index for the collection size."""
+        # Change 5: avoid repeatedly fetching and tokenizing an unchanged
+        # collection while invalidating safely when its document count changes.
+        count = vector_store.collection.count()
+        cached = cls._INDEX_CACHE.get(count)
+        if cached is not None:
+            return cached
         result = vector_store.collection.get(include=["documents", "metadatas"])
-        return cls(result["documents"], result["metadatas"])
+        index = cls(result["documents"], result["metadatas"])
+        cls._INDEX_CACHE.clear()
+        cls._INDEX_CACHE[count] = index
+        return index
 
-    def search(self, query: str, top_k: int = 5) -> list[dict]:
+    # Change 3: recover lexical matches for OCR spelling variants only after
+    # the exact vocabulary lookup fails.
+    def _fuzzy_match(self, token: str, score_cutoff: int = 85) -> str | None:
+        """Return the closest known vocabulary token above ``score_cutoff``."""
+        match = process.extractOne(
+            token,
+            self.document_frequency.keys(),
+            score_cutoff=score_cutoff,
+        )
+        return match[0] if match is not None else None
+
+    def search(self, query: str, top_k: int = 5, fuzzy: bool = True) -> list[dict]:
+        """Return BM25-ranked chunks, optionally correcting unknown query tokens."""
         query_tokens = _tokens(query)
         total_documents = len(self.documents)
         if not query_tokens or not total_documents:
             return []
 
         k1, b = 1.5, 0.75
+        scoring_tokens: list[tuple[str, str]] = []
+        for token in query_tokens:
+            if token in self.document_frequency:
+                scoring_tokens.append((token, token))
+            elif fuzzy:
+                matched = self._fuzzy_match(token)
+                if matched is not None:
+                    scoring_tokens.append((token, matched))
         scored = []
         for index, frequencies in enumerate(self.term_frequencies):
             length = len(self.tokenized[index])
             score = 0.0
-            for token in query_tokens:
+            for _original_token, token in scoring_tokens:
                 frequency = frequencies.get(token, 0)
                 if not frequency:
                     continue

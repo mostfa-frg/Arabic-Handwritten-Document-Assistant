@@ -71,14 +71,15 @@ def _handle_service_error(
     | ImportError
     | OSError
     | APIError,
-) -> None:
+) -> HTTPException:
+    """Convert an expected service failure into an HTTP exception."""
     if isinstance(exc, ValueError):
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        return HTTPException(status_code=400, detail=str(exc))
     logger.exception("API service failure: %s: %s", type(exc).__name__, exc)
-    raise HTTPException(
+    return HTTPException(
         status_code=503,
         detail=f"{type(exc).__name__}: {exc}",
-    ) from exc
+    )
 
 
 @router.get("/health")
@@ -94,7 +95,9 @@ async def ocr(
     try:
         ocr_text = rag.ocr_image(await image.read())
     except (ValueError, FileNotFoundError, RuntimeError, ImportError, OSError) as exc:
-        _handle_service_error(exc)
+        # Change 2: explicitly re-raise the converted exception so static
+        # analysis can prove the successful path initialized ocr_text.
+        raise _handle_service_error(exc) from exc
     return OCRResponse(ocr_text=ocr_text)
 
 
@@ -106,7 +109,9 @@ def query(request: QueryRequest, rag: RAGService = Depends(get_service)):
     try:
         result = rag.answer_text(question, request.ocr_text)
     except (ValueError, FileNotFoundError, RuntimeError, ImportError, OSError, APIError) as exc:
-        _handle_service_error(exc)
+        # Change 2: explicitly re-raise the converted exception so result is
+        # definitely assigned after the try/except.
+        raise _handle_service_error(exc) from exc
     return QueryResponse(
         question=question,
         answer=result["answer"],
@@ -165,7 +170,9 @@ async def query_image(
         payload = await image.read()
         ocr_text, result = rag.answer_image(question, payload)
     except (ValueError, FileNotFoundError, RuntimeError, ImportError, OSError, APIError) as exc:
-        _handle_service_error(exc)
+        # Change 2: explicitly re-raise the converted exception so both
+        # response values are definitely assigned after the try/except.
+        raise _handle_service_error(exc) from exc
     return ImageQueryResponse(
         question=question,
         ocr_text=ocr_text,

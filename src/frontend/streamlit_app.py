@@ -213,7 +213,7 @@ def build_app() -> None:
         ).strip()
         if ocr_text:
             st.subheader("Extracted OCR text")
-            st.caption("راجع النص وعدّل الكلمات غير الصحيحة قبل التصدير. يمكنك تنزيل النسخة المصححة.")
+            st.caption(".راجع النص وعدّل الكلمات غير الصحيحة قبل التصدير. يمكنك تنزيل النسخة المصححة")
             edited_text = st.text_area(
                 "OCR result (editable)",
                 height=300,
