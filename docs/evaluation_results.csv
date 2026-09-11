@@ -1,0 +1,58 @@
+﻿id,image,question,expected_answer,retrieved_source,retrieved_page,retrieved_chunk,retrieval_relevance,answer,grounding,correctness,notes
+1,validation_1.png,ما البلد المذكور في بداية الرسالة؟,لبنان؛ وتظهر في بداية OCR كلمة «لبنان»، مع تاريخ غير مكتمل.,TheRealOKAI/muharaf-public-pages,2015 5-03 El-Khouri_Letter to Jennie Jabaley from Lebanon Oct18 1960_1,0,Relevant,"البلد المذكور في بداية الرسالة هو **لبنان**.
+
+يظهر ذلك بوضوح في النص المستخرج من الصورة وفي المقطع الأول من السياق حيث يبدأ النص بـ ""لبنان في ١٧ ١/"" (أو ""طبنان فيي ١/٠"" في النص المعرّف آلياً بشكل مشوش)، وهو ما يتطابق مع عنوان الصفحة الذي يشير إلى أن الرسالة من لبنان (""from Lebanon"").
+
+المصدر: TheRealOKAI/muharaf-public-pages | الصفحة: 2015 5-03 El-Khouri_Letter to Jennie Jabaley from Lebanon Oct18 1960_1",Grounded,Correct,Clear OCR heading.
+2,validation_1.png,ما العملية التي تقول المرسلة إنها تنوي إجراءها؟,تذكر OCR عملية مرتبطة بالعين، لكن الصياغة والجهة غير مؤكدة بسبب أخطاء OCR.,TheRealOKAI/muharaf-public-pages,2015 5-03 El-Khouri_Letter to Jennie Jabaley from Lebanon Oct18 1960_1,0,Relevant,"بناءً على النص المستخرج من الصورة والمقطع الأول، تقول المرسلة إنها تنوي إجراء عملية **عيون** (أو ""متشان عيوني"" كما ورد في النص المشوش، والتي يُرجح أنها تشير إلى عملية جراحية للعينين).
+
+يظهر ذلك في الجملة: ""لأن تعرفي الزعى مايو الين متشان عيون خليهم خالك شا يبعت الى كتات رن انا لتاننو وهوا ما جاد مي"" (والتي يمكن تفسيرها بحذر على أنها: ""لأنك تعرفين أن ما يؤلمني هو متشان عيوني، خليهم خالك..."").
+
+**ملاحظة:** النص يحتوي على أخطاء OCR واضحة وكلمات غير مفهومة تمامًا، مما يجعل التأكد الدقيق من نوع العملية (مثل إزالة المياه البيضاء أو غيرها) غير ممكن، لكن الإشارة الواضحة الوحيدة لعملية طبية هي **العيون**.
+
+المصدر: الصفحة: 2015 5-03 El-Khouri_Letter to Jennie Jabaley from Lebanon Oct18 1960_1",Partially Grounded,Partially Correct,"The eye reference is present, but the exact operation is not reliably transcribed."
+3,validation_2.png,ما اسم الأخت الصغيرة المذكورة في الرسالة؟,يظهر الاسم في OCR بصيغة مشوشة («جور هن»)، لذلك القراءة الأقرب غير مؤكدة.,TheRealOKAI/muharaf-public-pages,2015 5-07 El-Khouri_Letter to Joseph from Lebanon Dec17 1959_1,0,Relevant,"بناءً على المقطع 2 من الوثيقة (الصفحة: 2015 5-07 El-Khouri_Letter to Joseph from Lebanon Dec17 1959_1)، يذكر الكاتب: ""تألنا غز اسم اخي العغيرة لا اسمها جوره"".
+
+يبدو أن النص يحتوي على أخطاء في التعرف الضوئي (OCR) أو الكتابة اليدوية، حيث يشير إلى ""اسم أخي"" ثم يتبعه ""لا اسمها جوره"" (أو جوريت/جوريت). بالنظر إلى السياق الذي يتحدث عن أخبار العائلة، وكلمة ""جوره"" (أو ما يشابهها في النص المشوش) هي الاسم الوحيد المذكور في هذا الجزء المتعلق بأسماء الأقارب الصغار.
+
+ومع ذلك، النص غير واضح تماماً بسبب التشويش. الاسم الذي يظهر في النص هو **""جوره""** (أو ما يشبهها مثل ""جوريت"" أو ""جوريت"" حسب قراءة الخط).
+
+**ملاحظة:** النص الأصلي يقول: ""تألنا غز اسم اخي العغيرة لا اسمها جوره"". قد يكون المقصود ""أختنا الصغيرة"" وليس ""أخي""، والاسم المذكور هو **جوره** (أو جوريت).
+
+الإجابة الأكثر دقة بناءً على النص المتاح: **جوره** (أو ما يشابهها في النص المشوش).",Partially Grounded,Partially Correct,The name is present only as noisy OCR; the answer preserves uncertainty.
+4,validation_2.png,إلى أين سيذهب خالي يعقوب غداً؟,يظهر في OCR اسم مكان مشوش («حسرصن»)، ولذلك لا يمكن الجزم بالقراءة.,TheRealOKAI/muharaf-public-pages,2015 5-07 El-Khouri_Letter to Joseph from Lebanon Dec17 1959_1,0,Relevant,"بناءً على المقطع 3 من الوثيقة (الصفحة: 2015 5-07 El-Khouri_Letter to Joseph from Lebanon Dec17 1959_1)، يذكر النص: ""مع الي رمققوب سيذهي غدا الى حص"".
+
+بسبب تشوه النص الناتج عن التعرف الضوئي على الحروف (OCR)، فإن كلمة ""حص"" غير واضحة تماماً وقد تكون خطأً في القراءة لكلمة أخرى (مثل ""حاص"" أو اسم مكان محدد). ومع ذلك، النص الصريح في المقطع المسترجع يشير إلى أنه سيذهب إلى **""حص""**.
+
+**ملاحظة:** النص الأصلي مشوش، وكلمة الوجهة ""حص"" قد تكون قراءة غير دقيقة لاسم مكان آخر، ولكن هذه هي الكلمة الظاهرة في النص المسترجع.
+
+المصدر: TheRealOKAI/muharaf-public-pages | الصفحة: 2015 5-07 El-Khouri_Letter to Joseph from Lebanon Dec17 1959_1 | المقطع: 2",Grounded,Partially Correct,"Retrieved OCR says ""has"" while reviewed evidence reads ""Homs""; destination remains OCR-uncertain."
+5,validation_3.png,ما اسم القديس المذكور في القصيدة؟,تظهر عبارة مشوشة قريبة من «مار جرجس»، لكن الاسم غير واضح تماماً في OCR.,TheRealOKAI/muharaf-public-pages,2015 5-07b El-Khouri_Letter to Joseph from Lebanon Dec17 1959_2_1,0,Relevant,"بناءً على النص المستخرج من الصورة والمقطع الأول، اسم القديس المذكور في القصيدة هو **مار جرجس** (أو مار جروسنا كما ورد في النص المشوش).
+
+يظهر هذا الاسم في السطر: ""يا مارجروسنا الر"" (يا مار جرجسنا).
+
+المصدر: TheRealOKAI/muharaf-public-pages | الصفحة: 2015 5-07b El-Khouri_Letter to Joseph from Lebanon Dec17 1959_2_1",Grounded,Correct,Retrieved noisy form supports the saint name.
+6,validation_3.png,من الذين تطلب القصيدة حمايتهم؟,تتحدث القصيدة عن حماية العائلة/الأهل، لكن السطور مشوشة ولا تسمح بتحديد كامل.,TheRealOKAI/muharaf-public-pages,2015 5-07b El-Khouri_Letter to Joseph from Lebanon Dec17 1959_2_1,0,Relevant,"بناءً على النص المستخرج من الصورة والمقطع الأول، تطلب القصيدة الحماية (الاحتراس) لـ:
+
+1.  **عمي** (العم).
+2.  **كامل عيلتا** (كامل العائلة).
+
+النص يقول: ""احرس عمي... احرس كامل عيلتا"".
+
+**المصدر:** TheRealOKAI/muharaf-public-pages | الصفحة: 2015 5-07b El-Khouri_Letter to Joseph from Lebanon Dec17 1959_2_1",Grounded,Correct,Retrieved text supports protection of the uncle and whole family.
+7,validation_4.png,في أي مكان تذكر الرسالة أنهم يسكنون؟,يظهر في OCR ذكر «البترون» و«ملك يوسف»، لكن تركيب المكان غير مؤكد.,TheRealOKAI/muharaf-public-pages,2015 5-07b El-Khouri_Letter to Joseph from Lebanon Dec17 1959_2_2,0,Relevant,"بناءً على المقطع الأول من السياق المسترجع، يذكر المرسل أنهم يسكنون في **عبرين في البتزون**، وتحديداً في ملك **يوسف الشدياءلي** (أو الشوي بن بيح مي كما ورد في النص المستخرج من الصورة، مع وجود تشويش في القراءة).
+
+المصدر: TheRealOKAI/muharaf-public-pages | الصفحة: 2015 5-07b El-Khouri_Letter to Joseph from Lebanon Dec17 1959_2_2",Grounded,Correct,"Retrieved chunk contains the residence wording, although noisy."
+8,validation_4.png,ما اسم إحدى المتوفيات المذكورة في نهاية النص؟,يظهر اسم مشوش قريب من «مريم»، لكن بقية الاسم غير مقروء بثقة.,TheRealOKAI/muharaf-public-pages,2015 5-07b El-Khouri_Letter to Joseph from Lebanon Dec17 1959_2_2,0,Relevant,"بناءً على المقطع الأول من السياق المسترجع (الصفحة: 2015 5-07b El-Khouri_Letter to Joseph from Lebanon Dec17 1959_2_2)، يُذكر في نهاية النص اسم المتوفاة: **مريم** (التي وُصفت بأنها ""أرملة بولع الاسيس"" أو ما شابه ذلك في النص المشوش).
+
+النص الأصلي يقول: ""واخر ايف ان كوح مريم ارملة بولع الاسيس..""
+
+لذلك، اسم إحدى المتوفيات المذكورة هو **مريم**.",Grounded,Correct,Retrieved text supports the name Maryam.
+9,validation_5.png,ما قيمة العيدية المذكورة في بداية الرسالة؟,تظهر قيمة مالية في OCR بصياغة مشوشة («خمة عز دولا»)، لذلك الرقم غير مؤكد.,TheRealOKAI/muharaf-public-pages,2015 5-08b El-Khouri_Letter to Joseph from Lebanon Dec19 1957_2_1,0,Relevant,"قيمة العيدية المذكورة في بداية الرسالة هي **خمسة عشر دولاراً**.
+
+**المصدر:** المقطع 1 (الصفحة: 2015 5-08b El-Khouri_Letter to Joseph from Lebanon Dec19 1957_2_1)، حيث ورد النص: ""وهي خمسة عر دولارا"" (والتي تُفهم من السياق والخط اليدوي على أنها ""خمسة عشر دولاراً"").",Grounded,Correct,Retrieved chunk explicitly contains the dollar amount.
+10,validation_5.png,من الشخصية التي تشكر العاطفة النبيلة في الرسالة؟,تذكر OCR اسماً قريباً من «الأم ماري جوزيف غريب»، مع أخطاء في القراءة.,TheRealOKAI/muharaf-public-pages,2015 5-08b El-Khouri_Letter to Joseph from Lebanon Dec19 1957_2_1,0,Relevant,"بناءً على المقطع 1 من الوثيقة (الرسالة المؤرخة في 19 ديسمبر 1957)، الشخصية التي تشكر على العاطفة النبيلة هي **جوزيف غريب**.
+
+يذكر النص صراحة: ""جوزيف غريب التي شكر عا طفتك النبه"" (وهي عبارة مشوشة بسبب OCR، لكن السياق يدل على أن جوزيف غريب هو من شكر على العاطفة النبيلة).
+
+المصدر: TheRealOKAI/muharaf-public-pages | الصفحة: 2015 5-08b El-Khouri_Letter to Joseph from Lebanon Dec19 1957_2_1",Partially Grounded,Incorrect,"The name appears in context, but the answer assigns thanks to the wrong person; the OCR phrase identifies Mother Marie Joseph Gharib."
